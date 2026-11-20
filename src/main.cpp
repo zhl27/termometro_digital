@@ -1,24 +1,19 @@
 #include <Arduino.h>
 #include "BleJsonFacade.h"
+#include "FuncionAproximacion.h"
 #include "MeanFilterLib.h"
 
 static BleJsonFacade bleJson;
 static MeanFilter<uint32_t> meanFilter(10000);
 
-
-typedef double (*FuncionAproximacion)(double); // toma tension en V y retorna Temperatura en Kelvin
-static double TemperaturaPorAproximacionCuadratica(double Voltios);
-static double TemperaturaPorAproximacionExponencial(double Voltios);
-
-// Declaro variables globales y las instancio con valor default.
-static FuncionAproximacion funcionAproximacionActual = TemperaturaPorAproximacionExponencial;
-static String funcion_aproximacion_actual_string = "Exponencial";
+// // Declaro variables globales y las instancio con valor default.
+// static FuncionAproximacion funcionAproximacionActual = TemperaturaPorAproximacionExponencial;
+// static String funcion_aproximacion_actual_string = "Exponencial";
 
 constexpr int PIN_ADC = 33; // ESP32 ADC pin (GPIO 34)
 constexpr float R1 = 10000.0; // Resistencia fija en ohmios (ej. 10k)
 constexpr float Vin_mV = 3300.0; // Medir con tester el pin 3V3 real de tu placa para mayor precisión
 
-constexpr double euler = 2.71828;
 
 static int leerADC(const int pin) {
     const int adcValue = analogRead(pin);
@@ -52,16 +47,6 @@ static uint32_t leerPinConFiltro(const int pin, const uint32_t nroMuestras = 100
 // }
 
 
-static double TemperaturaPorAproximacionCuadratica(const double Voltios) {
-    const double Temp_Kelvin = 16.27 * (Voltios*Voltios) - 88.406 * Voltios + 393.564;
-    return Temp_Kelvin;
-}
-static double TemperaturaPorAproximacionExponencial(const double Voltios) {
-    const double Temp_Kelvin = 377.28 * pow(euler,-0.157*Voltios);;
-    return Temp_Kelvin;
-}
-
-
 void setup() {
     Serial.begin(115200);
     analogSetPinAttenuation(PIN_ADC, ADC_11db);
@@ -78,15 +63,20 @@ void setup() {
             bleJson.sendValue("status", "PONG");
         }
         else if (cmd == "APROX") {
-            bleJson.sendValue("funcionAproximacion", funcion_aproximacion_actual_string.c_str());
+            bleJson.sendValue("funcionAproximacion", funcion_aproximacion_string[funcion_aproximacion_actual]);
         }
         else if (cmd == "EXP") {
             bleJson.sendValue("msg", "Cambiando a Exponencial");
-            funcion_aproximacion_actual_string = "Exponencial";
+            funcion_aproximacion_actual = EXP;
+
         }
         else if (cmd == "QUAD") {
             bleJson.sendValue("msg", "Cambiando a Cuadratica");
-            funcion_aproximacion_actual_string = "Cuadratica";
+            funcion_aproximacion_actual = QUAD;
+        }
+        else if (cmd == "LIN") {
+            bleJson.sendValue("msg", "Cambiando a Lineal");
+            funcion_aproximacion_actual = LIN;
         }
     });
 }
@@ -103,7 +93,7 @@ void loop() {
     const auto Vout_V = Vout_mV/1000;
     // const double Temp_Kelvin = 16.27 * (Vout_V*Vout_V) - 88.406 * Vout_V + 393.564;
     // const double Temp_Kelvin = 377.28 * pow(euler,-0.157*Vout_V);
-    const double Temp_Kelvin = funcionAproximacionActual(Vout_V);
+    const double Temp_Kelvin = calcularTemperaturaPor[funcion_aproximacion_actual](Vout_V);
 
     const double Temp_Celcius = Temp_Kelvin - 273.15;
 
