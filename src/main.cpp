@@ -78,6 +78,10 @@ void setup() {
             bleJson.sendValue("msg", "Cambiando a Lineal");
             funcion_aproximacion_actual = LIN;
         }
+        else if (cmd == "LOG") {
+            bleJson.sendValue("msg", "Cambiando a Logaritmica");
+            funcion_aproximacion_actual = LOG;
+        }
     });
 }
 
@@ -102,7 +106,7 @@ void loop() {
     bleJson.update();
 
     static unsigned long lastSend = 0;
-    if (bleJson.isConnected() && millis() - lastSend >= 2000) {
+    if (bleJson.isConnected() && millis() - lastSend >= 1000) {
     // if (bleJson.isConnected()) {
         lastSend = millis();
 
@@ -114,8 +118,8 @@ void loop() {
         bleJson.beginObject();
         bleJson.addField("muestreo_timestamp", muestreo_timestamp, 0);
         bleJson.addField("mV", Vout_mV, 0);
-        bleJson.addField("Temp Kelvin", Temp_Kelvin, 5);
-        bleJson.addField("Temp Celcius", Temp_Celcius, 5);
+        bleJson.addField("Temp Kelvin", Temp_Kelvin, 3);
+        bleJson.addField("Temp Celcius", Temp_Celcius, 3);
         bleJson.sendObject();
     }
 }

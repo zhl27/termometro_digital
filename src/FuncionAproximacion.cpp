@@ -6,16 +6,18 @@
 
 #include <math.h>
 
-funcion_aproximacion_enum funcion_aproximacion_actual = QUAD; // declaramos y asignamos valor default.
+funcion_aproximacion_enum funcion_aproximacion_actual = LOG; // declaramos y asignamos valor default.
 String funcion_aproximacion_string[] = {
     "Cuadratica",
     "Exponencial",
-    "Lineal"
+    "Lineal",
+    "Logaritmica"
 };
 FuncionAproximacion calcularTemperaturaPor[] = {
     TemperaturaPorAproximacionCuadratica,
     TemperaturaPorAproximacionExponencial,
     TemperaturaPorAproximacionLineal,
+    TemperaturaPorAproximacionLogaritmica
 };
 
 static double TemperaturaPorAproximacionCuadratica(const double Voltios) {
@@ -28,5 +30,9 @@ static double TemperaturaPorAproximacionExponencial(const double Voltios) {
 }
 static double TemperaturaPorAproximacionLineal(const double Voltios) {
     const double Temp_Kelvin = -48.764 * Voltios + 371.25;
+    return Temp_Kelvin;
+}
+static double TemperaturaPorAproximacionLogaritmica(const double Voltios) {
+    const double Temp_Kelvin = -39.2272 * std::log(Voltios) + 317.6936;
     return Temp_Kelvin;
 }

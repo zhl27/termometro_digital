@@ -13,12 +13,14 @@ typedef double (*FuncionAproximacion)(double); // toma tension en V y retorna Te
 static double TemperaturaPorAproximacionCuadratica(double Voltios);
 static double TemperaturaPorAproximacionExponencial(double Voltios);
 static double TemperaturaPorAproximacionLineal(double Voltios);
+static double TemperaturaPorAproximacionLogaritmica(double Voltios);
 
 
 enum funcion_aproximacion_enum {
     QUAD = 0,
     EXP,
-    LIN
+    LIN,
+    LOG
 };
 extern funcion_aproximacion_enum funcion_aproximacion_actual; // declaramos y asignamos valor default.
 extern FuncionAproximacion calcularTemperaturaPor[];
